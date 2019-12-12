@@ -1,11 +1,11 @@
-import { IAction, IReducer, IState, IStore } from 'src/interfaces'
+import { IAction, IStore } from 'src/interfaces'
 
-export const createStore = (store: IStore, initialState: IState = {}) => {
-  let state = initialState
+export const createStore = (store: IStore) => {
+  let state = store.state
   return {
-    dispatch: async (action: IAction, payload: IReducer[typeof action]) => {
+    dispatch: async (action: IAction, payload: any) => {
       state = store.reducer[action](state, payload)
     },
-    getState: () => state
+    getState: (): typeof state => state
   }
 }
