@@ -1,9 +1,11 @@
 {
   "name": "velux",
-  "version": "1.1.0",
-  "description": "Flux library",
+  "version": "1.2.0",
+  "description": "Flux library with safe type",
   "keywords": [
-    "Flux"
+    "Flux",
+    "Flux Typescript",
+    "safe type"
   ],
   "directories": {
     "test": "tests"
