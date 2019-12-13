@@ -1,6 +1,5 @@
 import { createStore } from '../src/createStore'
 import { getDefStore } from './mocks'
-import { IReducer, IReducerFun, IState } from '../src/interfaces'
 
 describe('getState function returns state', () => {
   it('getState return initial state', () => {
@@ -10,17 +9,12 @@ describe('getState function returns state', () => {
     expect(init).toBe('')
   })
   it('getState return state after change', async () => {
-    interface State extends IState {
-      init: string
-    }
-    const state1: State = {
+    const state1 = {
       init: ''
     }
-    interface Reducer extends IReducer<State> {
-      changeInit: IReducerFun<State, string>
-    }
-    const reducer: Reducer = {
-      async changeInit (state: State, payload: string): Promise<State> {
+    type State = typeof state1
+    const reducer = {
+      async changeInit (state: State, payload: string) {
         return {
           ...state,
           init: payload
@@ -31,9 +25,10 @@ describe('getState function returns state', () => {
       state: state1,
       reducer
     }
-    const {getState, dispatch} = createStore<State, Reducer>(store)
+    const {getState, dispatch} = createStore<State, typeof reducer>(store)
     await dispatch('changeInit', '1')
+    await dispatch('changeInit', '2')
     const {init} = getState()
-    expect(init).toBe('1')
+    expect(init).toBe('2')
   })
 })
