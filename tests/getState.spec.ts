@@ -9,7 +9,7 @@ describe('getState function returns state', () => {
     const {init} = getState()
     expect(init).toBe('')
   })
-  it('getState return state after change', () => {
+  it('getState return state after change', async () => {
     interface State extends IState {
       init: string
     }
@@ -20,7 +20,7 @@ describe('getState function returns state', () => {
       changeInit: IReducerFun<State, string>
     }
     const reducer: Reducer = {
-      changeInit (state: State, payload: string): State {
+      async changeInit (state: State, payload: string): Promise<State> {
         return {
           ...state,
           init: payload
@@ -32,7 +32,8 @@ describe('getState function returns state', () => {
       reducer
     }
     const {getState, dispatch} = createStore<State, Reducer>(store)
-    dispatch('changeInit', '1')
+    await dispatch('changeInit', '1')
     const {init} = getState()
+    expect(init).toBe('1')
   })
 })

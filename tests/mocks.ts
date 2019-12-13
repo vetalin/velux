@@ -1,13 +1,13 @@
 import { IStore } from '../src/interfaces'
 
-export const getDefStore = (): IStore => ({
+export const getDefStore = (): IStore<any, any> => ({
   state: {
     init: ''
   },
   reducer: {
-    changeInit (state, payload: any) {
+    changeInit (state: any, payload: any) {
       return {
-        state,
+        ...state,
         init: payload
       }
     }
