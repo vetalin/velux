@@ -2,15 +2,15 @@ export interface IState {
   [key: string]: any
 }
 
-export type IAction = keyof IReducer
+// export type IAction = keyof IReducer
 
-export type IReducerFun = (state: IState, payload: any) => IState | Promise<IState>
+export type IReducerFun<TState, TPayload> = (state: TState, payload: TPayload) => TState | Promise<TState>
 
-export interface IReducer {
-  [key: string]: IReducerFun
+export interface IReducer<TState extends IState, TPayload = any> {
+  [key: string]: IReducerFun<TState, TPayload>
 }
 
-export interface IStore {
-  state: IState
-  reducer: IReducer
+export interface IStore<TState extends IState, TReducer extends IReducer<TState>> {
+  state: TState
+  reducer: TReducer
 }
