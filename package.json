@@ -1,6 +1,6 @@
 {
   "name": "velux",
-  "version": "1.2.0",
+  "version": "1.3.1",
   "description": "Flux library with safe type",
   "keywords": [
     "Flux",

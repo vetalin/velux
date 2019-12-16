@@ -62,8 +62,8 @@ export const getSubscriber = <TState>() => {
         actionListenersMap.delete(listenerKey)
       }
     },
-    watchToState: (stateKey: string, listener: ISubscribeStore, momentTrigger: IMomentTriggerWatch = 'after') => {
-      const listenerKey = getListenerKey(actionListenersMap, `${stateKey}-${momentTrigger}`)
+    watchToState: (stateKey: string, listener: ISubscribeStore) => {
+      const listenerKey = getListenerKey(actionListenersMap, stateKey)
       stateListenerMap.set(listenerKey, listener)
       return () => {
         stateListenerMap.delete(listenerKey)
