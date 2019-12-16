@@ -1,6 +1,6 @@
 import { createStore } from '../src/createStore'
 import { getDefStore } from './mocks'
-import { IReducer } from '../src/interfaces'
+import { IReducer, IReducerFun } from '../src/interfaces'
 
 describe('getState function returns state', () => {
   it('getState return initial state', () => {
@@ -51,7 +51,7 @@ describe('getState function returns state', () => {
       cats: [],
       dogs: []
     }
-    const reducer: IReducer<State> = {
+    const reducer = {
       'changeInit': async (state: State, payload: string) => {
         return {
           ...state,
