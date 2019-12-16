@@ -1,4 +1,4 @@
-import { IMomentTriggerWatch, ISubscribeStore } from './interfaces'
+import { IMomentTriggerWatch, IState, ISubscribeStore, IWatchTrigger } from './interfaces'
 
 const generateListenerKey = (id?: string): string => `all-action-listener-${id || Math.round(Date.now() * Math.random() * 100)}`
 const getValuesFromMap = (map: Map<any, any>) => [...(map as any)].map(([key, value]) => value)
@@ -18,7 +18,7 @@ export const getSubscriber = <TState>() => {
     getSubscribeListeners: () => listenerMap,
     getWatchToActionListeners: () => actionListenersMap,
     getWatchToStateListeners: () => stateListenerMap,
-    getWatcherAction: (actionName: string, momentTrigger: IMomentTriggerWatch) => {
+    getWatcherAction: (actionName: string, momentTrigger: IMomentTriggerWatch): ISubscribeStore[] => {
       const watcherKey = `${actionName}-${momentTrigger}-`
       return (() => {
         let filter: any = []
@@ -27,6 +27,23 @@ export const getSubscriber = <TState>() => {
         })
         return filter
       })()
+    },
+    getWatcherState: <TState extends IState>(): (newState: TState, oldState?: TState) => ISubscribeStore[] => {
+      let filteredWatcher: any = []
+      const map = stateListenerMap
+      return (newState: TState, oldState?: TState) => {
+        map.forEach((value: ISubscribeStore, key: string) => {
+          const [stateKey] = key.split('-')
+          const [newStateString, oldStateString] = [newState, oldState].map(state => {
+            if (!state) return undefined
+            const stateObj = state[stateKey]
+            if (!Array.isArray(stateObj) || typeof stateObj !== 'object') return state[stateKey]
+            return JSON.stringify(stateObj)
+          })
+          if (newStateString !== oldStateString) filteredWatcher = [...filteredWatcher, value]
+        })
+        return filteredWatcher
+      }
     },
     getActionListenerByKey: (listenerKey: string) => actionListenersMap.get(listenerKey),
     getStateListenerByKey: (listenerKey: string) => stateListenerMap.get(listenerKey),
@@ -52,5 +69,25 @@ export const getSubscriber = <TState>() => {
         stateListenerMap.delete(listenerKey)
       }
     }
+  }
+}
+
+export const watchTrigger = async <TState>({
+                                       subscribeListeners,
+                                       actionPromise,
+                                       oldState,
+                                       watchersActionAfter,
+                                       watchersActionBefore,
+                                       allListenersSubscribe,
+                                       getStateWatchers}: IWatchTrigger<TState>
+) => {
+  const beforeListenerCall = (listener: ISubscribeStore) => { listener(oldState) }
+  watchersActionBefore.map(beforeListenerCall)
+  const newState = await actionPromise
+  const listenerFunCall = (listener: ISubscribeStore) => { listener(newState, oldState) }
+  getStateWatchers(newState, oldState).map(listenerFunCall)
+  watchersActionAfter.map(listenerFunCall)
+  if (subscribeListeners.size) {
+    allListenersSubscribe.map(listenerFunCall)
   }
 }

@@ -1,5 +1,5 @@
-import { IReducer, IState, IStore, ISubscribeStore, MakeReadOnly } from './interfaces'
-import { getSubscriber } from './subscriber'
+import { IReducer, IState, IStore, MakeReadOnly } from './interfaces'
+import { getSubscriber, watchTrigger } from './subscriber'
 
 export const createStore = <TState extends IState, TReducer extends IReducer<TState>>(store: IStore<TState, TReducer>) => {
   const {reducer, state: initialState} = store
@@ -10,24 +10,27 @@ export const createStore = <TState extends IState, TReducer extends IReducer<TSt
     watchToState,
     getSubscribeListeners,
     getWatcherAction,
-    getAllListeners
+    getAllListeners,
+    getWatcherState
   } = getSubscriber()
   return {
     dispatch: async<TAction extends keyof TReducer, TPayload extends Parameters<TReducer[TAction]>[1]>(action: TAction, payload: TPayload): Promise<void> => {
       const subscribeListeners = getSubscribeListeners()
-      const watchersActionBefore = getWatcherAction((action as string), 'before')
-      const watchersActionAfter = getWatcherAction((action as string), 'after')
+      const [watchersActionBefore, watchersActionAfter] = ['before', 'after'].map((moment: any) => getWatcherAction((action as string), moment))
+      const getStateWatchers = getWatcherState()
       const prevState = state
-      const beforeListenerCall = (listener: ISubscribeStore) => { listener(prevState) }
-      beforeListenerCall(watchersActionBefore)
-      const newState = await reducer[action](state, payload)
-      const listenerFunCall = (listener: ISubscribeStore) => { listener(prevState, newState) }
-      listenerFunCall(watchersActionAfter)
-      if (subscribeListeners.size) {
-        const allListenersSubscribe = getAllListeners()
-        allListenersSubscribe.map(listenerFunCall)
-      }
-      state = newState
+      const actionPromise = reducer[action](state, payload)
+      watchTrigger({
+        oldState: prevState,
+        actionPromise,
+        watchersActionBefore,
+        watchersActionAfter,
+        actionName: (action as string),
+        subscribeListeners,
+        allListenersSubscribe: getAllListeners(),
+        getStateWatchers
+      })
+      state = await actionPromise
     },
     getState: (): MakeReadOnly<TState> => state,
     subscribe,
