@@ -1,7 +1,7 @@
 import { IMomentTriggerWatch, IState, ISubscribeStore, IWatchTrigger } from './interfaces'
 
 const generateListenerKey = (id?: string): string => `all-action-listener-${id || Math.round(Date.now() * Math.random() * 100)}`
-const getValuesFromMap = (map: Map<any, any>) => [...(map as any)].map(([key, value]) => value)
+const getValuesFromMap = (map: Map<any, any>) => map.size ? [...(map as any)].map(([key, value]) => value) : []
 const getListenerKey = (map: Map<string, any>, key: string, index: number = 0): string => {
   if (map.get(`${key}-${index}`)) {
     if (index > 1000) throw new Error('getListenerKey not found key, index > 1000')
