@@ -11,12 +11,23 @@ const getListenerKey = (map: Map<string, any>, key: string, index: number = 0): 
 }
 
 export const getSubscriber = <TState>() => {
-  let mockListener:ISubscribeStore = () => {}
   const listenerMap = new Map()
   const actionListenersMap = new Map()
   const stateListenerMap = new Map()
   return {
-    getInitialListener: () => mockListener,
+    getSubscribeListeners: () => listenerMap,
+    getWatchToActionListeners: () => actionListenersMap,
+    getWatchToStateListeners: () => stateListenerMap,
+    getWatcherAction: (actionName: string, momentTrigger: IMomentTriggerWatch) => {
+      const watcherKey = `${actionName}-${momentTrigger}-`
+      return (() => {
+        let filter: any = []
+        actionListenersMap.forEach((value, key) => {
+          if (key.includes(watcherKey)) filter = [...filter, value]
+        })
+        return filter
+      })()
+    },
     getActionListenerByKey: (listenerKey: string) => actionListenersMap.get(listenerKey),
     getStateListenerByKey: (listenerKey: string) => stateListenerMap.get(listenerKey),
     getAllListeners: () => getValuesFromMap(listenerMap),
