@@ -1,9 +1,11 @@
 import { IReducer, IState, IStore, ISubscribeStore, MakeReadOnly } from './interfaces'
+import { getSubscriber } from './subscriber'
 
 export const createStore = <TState extends IState, TReducer extends IReducer<TState>>(store: IStore<TState, TReducer>) => {
   const {reducer, state: initialState} = store
   let state = initialState
-  let initialListener: Function = () => {}
+  const { getInitialListener, subscribe } = getSubscriber()
+  let initialListener = getInitialListener()
   return {
     dispatch: async<TAction extends keyof TReducer, TPayload extends Parameters<TReducer[TAction]>[1]>(action: TAction, payload: TPayload): Promise<void> => {
       const prevState = state
@@ -12,8 +14,6 @@ export const createStore = <TState extends IState, TReducer extends IReducer<TSt
       state = newState
     },
     getState: (): MakeReadOnly<TState> => state,
-    subscribe: (listener: ISubscribeStore) => {
-      initialListener = listener
-    }
+    subscribe
   }
 }

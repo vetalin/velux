@@ -16,3 +16,4 @@ export interface IStore<TState, TReducer extends IReducer<TState>> {
 }
 
 export type ISubscribeStore = (currentState?: any, prevState?: any) => void
+export type IMomentTriggerWatch = 'before' | 'after'
